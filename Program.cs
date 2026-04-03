@@ -49,7 +49,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins(frontendUrl, frontendUrl + "/", "http://localhost:3000")
+            policy.SetIsOriginAllowed(origin => 
+                  {
+                      if (string.IsNullOrWhiteSpace(origin)) return false;
+                      var normalizedOrigin = origin.TrimEnd('/');
+                      return normalizedOrigin == frontendUrl || 
+                             normalizedOrigin == "http://localhost:3000" ||
+                             (normalizedOrigin.Contains("vercel.app") && normalizedOrigin.Contains("h-truyen-fe"));
+                  })
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -61,14 +68,17 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 else 
 {
-    // In production, the cloud provider (Render/Railway/Vercel) handles HTTPS
-    // so we don't strictly need Redirect, but it's safer to keep for some setups
-    // app.UseHttpsRedirection(); 
+    // Ensure forwarded headers are handled correctly behind Render's proxy
+    app.UseForwardedHeaders();
 }
+
+app.UseRouting();
 
 app.UseCors("AllowFrontend");
 
