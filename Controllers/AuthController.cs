@@ -61,7 +61,9 @@ namespace HTruyen.Controllers
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
-                Avatar = user.Avatar
+                Avatar = user.Avatar,
+                Level = user.Level,
+                Exp = user.Exp
             });
         }
 

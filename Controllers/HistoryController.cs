@@ -35,14 +35,23 @@ namespace HTruyen.Controllers
         public async Task<IActionResult> AddOrUpdateHistory([FromBody] ReadingHistory history)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return Unauthorized();
+
             history.UserId = userId;
             history.ReadAt = DateTime.UtcNow;
 
             var existing = await _context.ReadingHistories
                 .FirstOrDefaultAsync(h => h.UserId == userId && h.ComicSlug == history.ComicSlug);
 
+            bool isNewChapter = false;
+
             if (existing != null)
             {
+                if (existing.ChapterName != history.ChapterName) 
+                {
+                    isNewChapter = true;
+                }
                 existing.ChapterName = history.ChapterName;
                 existing.ChapterApiData = history.ChapterApiData;
                 existing.ScrollPosition = history.ScrollPosition;
@@ -51,11 +60,60 @@ namespace HTruyen.Controllers
             }
             else
             {
+                isNewChapter = true;
                 _context.ReadingHistories.Add(history);
             }
 
+            if (isNewChapter)
+            {
+                AddExp(user, 10);
+                _context.Users.Update(user);
+            }
+
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Lịch sử đã được lưu." });
+            return Ok(new { message = "Lịch sử đã được lưu.", expAdded = isNewChapter ? 10 : 0 });
+        }
+
+        private void AddExp(User user, int amount)
+        {
+            if (user.Level >= 15) return; // Max level
+
+            user.Exp += amount;
+            int reqExp = GetRequiredExp(user.Level);
+            
+            while (reqExp > 0 && user.Exp >= reqExp)
+            {
+                user.Exp -= reqExp;
+                user.Level++;
+                if (user.Level >= 15)
+                {
+                    user.Exp = 0;
+                    break;
+                }
+                reqExp = GetRequiredExp(user.Level);
+            }
+        }
+
+        private int GetRequiredExp(int level)
+        {
+            return level switch
+            {
+                1 => 100,
+                2 => 300,
+                3 => 1000,
+                4 => 2000,
+                5 => 3000,
+                6 => 4000,
+                7 => 5000,
+                8 => 6000,
+                9 => 7000,
+                10 => 8000,
+                11 => 11000,
+                12 => 12000,
+                13 => 13000,
+                14 => 14000,
+                _ => int.MaxValue
+            };
         }
 
         [HttpDelete("{slug}")]

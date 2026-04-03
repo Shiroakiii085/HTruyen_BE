@@ -8,6 +8,9 @@ namespace HTruyen.Models
         public string PasswordHash { get; set; } = string.Empty;
         public string Avatar { get; set; } = string.Empty;
         public string Role { get; set; } = "User"; // User or Admin
+        public int Level { get; set; } = 1; // Nhất Cảnh mặc định
+        public int Exp { get; set; } = 0; // EXP hiện tại trong cấp
+        public DateTime? DateOfBirth { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigational properties

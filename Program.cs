@@ -75,6 +75,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseStaticFiles();
 app.UseRouting();
 
 // CORS MUST be between UseRouting and UseAuthorization
