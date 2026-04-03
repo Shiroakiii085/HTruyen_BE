@@ -56,6 +56,11 @@ namespace HTruyen.Controllers
                 existing.ChapterApiData = history.ChapterApiData;
                 existing.ScrollPosition = history.ScrollPosition;
                 existing.ReadAt = history.ReadAt;
+                
+                // Update ComicName and ThumbUrl if provided (fixes old records)
+                if (!string.IsNullOrEmpty(history.ComicName)) existing.ComicName = history.ComicName;
+                if (!string.IsNullOrEmpty(history.ThumbUrl)) existing.ThumbUrl = history.ThumbUrl;
+
                 _context.ReadingHistories.Update(existing);
             }
             else
