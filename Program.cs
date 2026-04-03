@@ -41,22 +41,23 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure CORS for Next.js
+// Configure Forwarded Headers for Render/Cloud
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
+                               Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    // Clear known networks and proxies to allow headers from any source (common in cloud environments)
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Configure CORS - Most flexible setup for debugging
 builder.Services.AddCors(options =>
 {
-    var frontendUrl = (builder.Configuration["FrontendUrl"] ?? "http://localhost:3000").TrimEnd('/');
-    
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.SetIsOriginAllowed(origin => 
-                  {
-                      if (string.IsNullOrWhiteSpace(origin)) return false;
-                      var normalizedOrigin = origin.TrimEnd('/');
-                      return normalizedOrigin == frontendUrl || 
-                             normalizedOrigin == "http://localhost:3000" ||
-                             (normalizedOrigin.Contains("vercel.app") && normalizedOrigin.Contains("h-truyen-fe"));
-                  })
+            policy.SetIsOriginAllowed(_ => true) // Allow any origin while still allowing credentials
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -65,21 +66,19 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Order is CRITICAL in ASP.NET Core Middleware
+app.UseForwardedHeaders();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseHttpsRedirection();
-}
-else 
-{
-    // Ensure forwarded headers are handled correctly behind Render's proxy
-    app.UseForwardedHeaders();
 }
 
 app.UseRouting();
 
+// CORS MUST be between UseRouting and UseAuthorization
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
