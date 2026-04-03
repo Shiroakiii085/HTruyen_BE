@@ -67,6 +67,29 @@ namespace HTruyen.Controllers
             });
         }
 
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+                return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound("Người dùng không tồn tại.");
+
+            return Ok(new 
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Role,
+                user.Avatar,
+                user.Level,
+                user.Exp
+            });
+        }
+
         private string GenerateJwtToken(User user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
