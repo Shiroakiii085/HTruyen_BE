@@ -44,10 +44,11 @@ builder.Services.AddAuthentication(options =>
 // Configure CORS for Next.js
 builder.Services.AddCors(options =>
 {
+    var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins(frontendUrl, "http://localhost:3000")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -61,8 +62,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
+else 
+{
+    // In production, the cloud provider (Render/Railway/Vercel) handles HTTPS
+    // so we don't strictly need Redirect, but it's safer to keep for some setups
+    // app.UseHttpsRedirection(); 
+}
 
 app.UseCors("AllowFrontend");
 
