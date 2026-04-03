@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,14 +16,17 @@ namespace HTruyen.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    Avatar = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    Exp = table.Column<int>(type: "integer", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,14 +37,14 @@ namespace HTruyen.Migrations
                 name: "Bookmarks",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ComicSlug = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ComicName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ThumbUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastChapter = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AddedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ComicSlug = table.Column<string>(type: "text", nullable: false),
+                    ComicName = table.Column<string>(type: "text", nullable: false),
+                    ThumbUrl = table.Column<string>(type: "text", nullable: false),
+                    LastChapter = table.Column<string>(type: "text", nullable: false),
+                    AddedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -57,16 +61,16 @@ namespace HTruyen.Migrations
                 name: "ReadingHistories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ComicSlug = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ComicName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ThumbUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ChapterName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ChapterApiData = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ScrollPosition = table.Column<int>(type: "int", nullable: false),
-                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ComicSlug = table.Column<string>(type: "text", nullable: false),
+                    ComicName = table.Column<string>(type: "text", nullable: false),
+                    ThumbUrl = table.Column<string>(type: "text", nullable: false),
+                    ChapterName = table.Column<string>(type: "text", nullable: false),
+                    ChapterApiData = table.Column<string>(type: "text", nullable: false),
+                    ScrollPosition = table.Column<int>(type: "integer", nullable: false),
+                    ReadAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
