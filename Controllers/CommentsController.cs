@@ -22,10 +22,16 @@ namespace HTruyen.Controllers
         }
 
         [HttpGet("{comicSlug}")]
-        public async Task<IActionResult> GetComments(string comicSlug)
+        public async Task<IActionResult> GetComments(string comicSlug, [FromQuery] string? chapterName)
         {
-            var comments = await _context.Comments
-                .Where(c => c.ComicSlug == comicSlug)
+            var query = _context.Comments.Where(c => c.ComicSlug == comicSlug);
+            
+            if (!string.IsNullOrEmpty(chapterName))
+            {
+                query = query.Where(c => c.ChapterName == chapterName);
+            }
+
+            var comments = await query
                 .Include(c => c.User)
                 .OrderByDescending(c => c.CreatedAt)
                 .Select(c => new
@@ -33,6 +39,7 @@ namespace HTruyen.Controllers
                     c.Id,
                     c.Content,
                     c.CreatedAt,
+                    c.ChapterName,
                     User = new
                     {
                         c.User!.Username,
@@ -59,7 +66,6 @@ namespace HTruyen.Controllers
             var content = request.Content;
             foreach (var word in BadWords)
             {
-                // Simple word replacement
                 var pattern = @"\b" + Regex.Escape(word) + @"\b";
                 content = Regex.Replace(content, pattern, "***", RegexOptions.IgnoreCase);
             }
@@ -68,6 +74,7 @@ namespace HTruyen.Controllers
             {
                 UserId = userId,
                 ComicSlug = request.ComicSlug,
+                ChapterName = request.ChapterName,
                 Content = content,
                 CreatedAt = DateTime.UtcNow
             };
@@ -81,6 +88,7 @@ namespace HTruyen.Controllers
                 comment.Id,
                 comment.Content,
                 comment.CreatedAt,
+                comment.ChapterName,
                 User = new
                 {
                     user!.Username,
@@ -96,5 +104,6 @@ namespace HTruyen.Controllers
     {
         public string ComicSlug { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
+        public string? ChapterName { get; set; }
     }
 }
