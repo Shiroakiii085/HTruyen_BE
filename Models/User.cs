@@ -16,5 +16,6 @@ namespace HTruyen.Models
         // Navigational properties
         public virtual ICollection<Bookmark> Bookmarks { get; set; } = new List<Bookmark>();
         public virtual ICollection<ReadingHistory> ReadingHistories { get; set; } = new List<ReadingHistory>();
+        public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     }
 }
