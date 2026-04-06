@@ -21,6 +21,7 @@ COPY --from=publish /app/publish .
 
 # Environment variables for Render/Railway
 ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "HTruyen.dll"]
