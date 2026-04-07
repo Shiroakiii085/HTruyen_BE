@@ -11,6 +11,7 @@ namespace HTruyen.Data
         public DbSet<Bookmark> Bookmarks { get; set; }
         public DbSet<ReadingHistory> ReadingHistories { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<FeaturedComicConfig> FeaturedComicConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +30,9 @@ namespace HTruyen.Data
                 .WithMany(u => u.Comments)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FeaturedComicConfig>()
+                .HasKey(f => f.Id);
         }
     }
 }
