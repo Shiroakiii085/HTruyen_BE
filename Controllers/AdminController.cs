@@ -40,37 +40,47 @@ namespace HTruyen.Controllers
         [HttpGet("statistics/reader-counts")]
         public async Task<IActionResult> GetReaderCounts()
         {
-            var now = DateTime.UtcNow;
+            try
+            {
+                var now = DateTime.UtcNow;
 
-            // Daily stats (last 30 days)
-            var dailyLimit = now.AddDays(-30);
-            var daily = await _context.ReadingHistories
-                .Where(h => h.ReadAt >= dailyLimit)
-                .GroupBy(h => h.ReadAt.Date)
-                .Select(g => new { Label = g.Key.ToString("yyyy-MM-dd"), Count = g.Count() })
-                .OrderBy(x => x.Label)
-                .ToListAsync();
+                // Pull once then aggregate in memory to avoid provider-specific SQL translation issues.
+                var histories = await _context.ReadingHistories
+                    .AsNoTracking()
+                    .Where(h => h.ReadAt >= now.AddYears(-2))
+                    .Select(h => h.ReadAt)
+                    .ToListAsync();
 
-            // Monthly stats (last 12 months)
-            var monthlyLimit = now.AddMonths(-12);
-            var monthly = await _context.ReadingHistories
-                .Where(h => h.ReadAt >= monthlyLimit)
-                .GroupBy(h => new { h.ReadAt.Year, h.ReadAt.Month })
-                .Select(g => new { 
-                    Label = g.Key.Year + "-" + (g.Key.Month < 10 ? "0" : "") + g.Key.Month, 
-                    Count = g.Count() 
-                })
-                .OrderBy(x => x.Label)
-                .ToListAsync();
+                var daily = histories
+                    .Where(d => d >= now.AddDays(-30))
+                    .GroupBy(d => d.Date)
+                    .Select(g => new { Label = g.Key.ToString("yyyy-MM-dd"), Count = g.Count() })
+                    .OrderBy(x => x.Label)
+                    .ToList();
 
-            // Yearly stats
-            var yearly = await _context.ReadingHistories
-                .GroupBy(h => h.ReadAt.Year)
-                .Select(g => new { Label = g.Key.ToString(), Count = g.Count() })
-                .OrderBy(x => x.Label)
-                .ToListAsync();
+                var monthly = histories
+                    .Where(d => d >= now.AddMonths(-12))
+                    .GroupBy(d => new { d.Year, d.Month })
+                    .Select(g => new
+                    {
+                        Label = $"{g.Key.Year}-{g.Key.Month:00}",
+                        Count = g.Count()
+                    })
+                    .OrderBy(x => x.Label)
+                    .ToList();
 
-            return Ok(new { Daily = daily, Monthly = monthly, Yearly = yearly });
+                var yearly = histories
+                    .GroupBy(d => d.Year)
+                    .Select(g => new { Label = g.Key.ToString(), Count = g.Count() })
+                    .OrderBy(x => x.Label)
+                    .ToList();
+
+                return Ok(new { Daily = daily, Monthly = monthly, Yearly = yearly });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to load reader statistics.", error = ex.Message });
+            }
         }
     }
 }
